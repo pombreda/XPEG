@@ -10,7 +10,7 @@
 
 # Rules
 <rules>                    = rule+
-<rule>                     = rule_identifier "=" expression actions?
+<rule>                     = rule_identifier assignment expression actions?
 <expression>               = sequence ("|" sequence)*
 <sequence>                 = prefix*
 <prefix>                   = lookahead_assertion? suffix
@@ -24,10 +24,11 @@
 <actions>                  = skip_action
 
 # Implicit tokens
+<assignment>          = "="
 <rule_identifier>     = ~"<[a-z_][a-z0-9_]*>"i
 <skip_action>         = ~"[skip]"i
 <regex>               = ~"~u?r?\".*?[^\\]\"[ilmsux]*"is
-<literal>             = ~"u?r?\".*?[^\\]\""is
+<literal>             = ~"u?r?\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\""is
 <identifier>          = ~"[a-z_][a-z0-9_]*"i
 <lookahead_assertion> = ~"[&!]"
 <quantifier>          = ~"[?*+]|{[0-9]+(\s*,\s*([0-9]+)?)?}"
