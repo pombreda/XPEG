@@ -3,25 +3,23 @@
 
 
 import collections
-import math
 import re
-
 
 token_patterns = [
     ('assignment',          r'='),
-    ('rule_identifier',     r'<[a-z_][a-z0-9_]*>'),
-    ('skip_action',         r'<skip>'),
     ('open_paren',          r'\('),    
     ('close_paren',         r'\)'),            
     ('pipe',                r'\|'),                
+    ('rule_identifier',     r'<[a-z_][a-z0-9_]*>'),
+    ('identifier',          r'[a-z_][a-z0-9_]*'),    
+    ('skip_action',         r'\[skip\]'),    
     ('regex',               r'~u?r?\".*?[^\\]\"[ilmsux]*'),
-    #('literal',             r'u?r?\".*?[^\\]\"'),
-    ('literal',             r'".*?"'),
+    ('literal',             r'u?r?\".*?[^\\]\"'),
     ('lookahead_assertion', r'[&!]'),
     ('quantifier',          r'[?*+]|{[0-9]+(\s*,\s*([0-9]+)?)?}'), #add other quantifier, like ??, *?, +?
     ('comment',             r'#[^\r\n]*'),
     ('newline',             r'\n'),
-    ('whitespaces',         r'[ \t]'),
+    ('whitespaces',         r'[ \t]')
 ]
 
 pattern = '|'.join('(?P<%s>%s)' % pair for pair in token_patterns)

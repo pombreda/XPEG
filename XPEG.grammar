@@ -28,7 +28,7 @@
 <rule_identifier>     = ~"<[a-z_][a-z0-9_]*>"i
 <skip_action>         = ~"[skip]"i
 <regex>               = ~"~u?r?\".*?[^\\]\"[ilmsux]*"is
-<literal>             = ~"u?r?\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\""is
+<literal>             = ~"u?r?\".*?[^\\]\""is
 <identifier>          = ~"[a-z_][a-z0-9_]*"i
 <lookahead_assertion> = ~"[&!]"
 <quantifier>          = ~"[?*+]|{[0-9]+(\s*,\s*([0-9]+)?)?}"
@@ -36,5 +36,6 @@
 <spaces>              = ~"(?:\t|\s|\n)+" [skip]
 
 # To do.: 
-#   - Add multiple repetition (like regex, vide Citrus) and actions (like "to_integer" function)
-#   - Add multiline comment option
+#  - Add multiple repetition (like regex, vide Citrus) and
+#    actions (like "to_integer" function)
+#  - Add multiline comment option
