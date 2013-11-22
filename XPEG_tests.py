@@ -5,7 +5,7 @@ import unittest
 from XPEG import GrammarParser
 
 known_values = [
-    ('expression = number', None)
+    ('<expression> = number', None)
 ]
 
 

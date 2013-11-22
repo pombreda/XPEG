@@ -11,7 +11,7 @@ token_patterns = [
     ('close_paren',         r'\)'),            
     ('pipe',                r'\|'),                
     ('rule_identifier',     r'<[a-z_][a-z0-9_]*>'),
-    ('identifier',          r'[a-z_][a-z0-9_]*'),    
+    ('rule_reference',      r'[a-z_][a-z0-9_]*'),    
     ('skip_action',         r'\[skip\]'),    
     ('regex',               r'~u?r?\".*?[^\\]\"[ilmsux]*'),
     ('literal',             r'u?r?\".*?[^\\]\"'),
@@ -42,7 +42,7 @@ class GrammarLexer(object):
             if token_type == 'newline':
                 line_start = column
                 line += 1
-            elif token_type != 'whitespaces':
+            elif not token_type in ['whitespaces', 'comment']:
                 token_value = token.group(token_type)
                 yield Token(token_type, token_value, line, token.start()-line_start)
             column = token.end()
@@ -80,6 +80,7 @@ class GrammarParser(object):
             self.print_tokens()
         self.tokenizer = self.lexer.tokenizer()
         self.token = self.next_token()
+        self.rules()
 
     def token_is(self, *token_types):
         if self.token:
@@ -87,6 +88,71 @@ class GrammarParser(object):
 
     def match(self, token_type_expected):
         if not self.token_is(token_type_expected):
-            raise ValueError('Syntax error: expected %s but got %s' % (token_type_expected), self.token.type)
+            raise ValueError('Syntax error: expected "%s" but got "%s"' % (token_type_expected, self.token.type))
         else:
             self.token = self.next_token()
+
+    # RULES
+
+    def rules(self):
+        '<rules> = rule+'
+        self.rule()
+        while self.token_is('rule_identifier'):
+            self.rule()
+
+    def rule(self):
+        '<rule> = rule_identifier assignment expression actions?'
+        self.match('rule_identifier')
+        self.match('assignment')
+        self.expression()
+        if self.token_is('skip_action'):
+            self.actions()
+
+    def expression(self):
+        '<expression> = sequence ("|" sequence)*'
+        self.sequence()
+        while self.token_is('pipe'):
+            self.match('pipe')
+            self.sequence()
+
+    def sequence(self):
+        '<sequence> = prefix*'
+        while self.token_is('lookahead_assertion', 'rule_reference', 'open_paren', 'literal', 'regex'):
+            self.prefix()
+
+    def prefix(self):
+        '<prefix> = lookahead_assertion? suffix'
+        if self.token_is('lookahead_assertion'):
+            self.match('lookahead_assertion')
+        self.suffix()
+
+    def suffix(self):
+        '<suffix> = primary quantifier?'
+        self.primary()
+        if self.token_is('quantifier'):
+            self.match('quantifier')
+
+    def primary(self):
+        """
+        <primary> = rule_reference 
+                  | parenthesized_expression
+                  | literal
+                  | regex
+        """
+        if self.token_is('rule_reference'):
+            self.match('rule_reference')
+        elif self.token_is('open_paren'):
+            self.parenthesized_expression()
+        elif self.token_is('literal'):
+            self.match('literal')
+        else:
+            self.match('regex')
+
+    def parenthesized_expression(self):
+        '<parenthesized_expression> = "(" expression ")"'
+        self.match('open_paren')
+        self.expression()
+        self.match('close_paren')
+
+    def actions(self):
+        self.match('skip_action')
